@@ -244,7 +244,7 @@ authorityKeyIdentifier = keyid,issuer:always
 # (NOTE: using [alt_names] to work around CN length limit for long hostnames)
 TMP_VH_CONF=$(sed -e '/req_extensions/s/^# //;
                       /^\[ v3_req \]/a subjectAltName = @alt_names' \
-                  /etc/pki/tls/openssl.cnf)
+                  /etc/ssl/openssl.cnf)
 
 # start nginx.conf here (vhost entries to be appended from loop below)
 cat > "$TOPGEN_VARETC/nginx.conf" <<- EOT
