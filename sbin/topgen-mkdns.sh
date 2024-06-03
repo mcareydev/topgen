@@ -361,6 +361,9 @@ done
 # full path+name of root zone file:
 ROOT_ZONE="$ROOT_ZD/root.zone"
 
+# Create directories used in $NAMED_CONF
+mkdir -p /var/named/data
+
 # continue generating $NAMED_CONF (boilerplate options and view configuration)
 cat >> $NAMED_CONF << EOT
 };
@@ -370,16 +373,17 @@ options {
 	allow-query { any; };
 	recursion no;
 	check-names master ignore;
-	directory "/var/cache/named";
-	dump-file "data/cache_dump.db";
-	statistics-file "data/named_stats.txt";
-	memstatistics-file "data/named_mem_stats.txt";
+	directory "/var/named";
+	dump-file "/var/named/data/cache_dump.db";
+	statistics-file "/var/named/data/named_stats.txt";
+	memstatistics-file "/var/named/data/named_mem_stats.txt";
 	pid-file "/run/named/named.pid";
 	session-keyfile "/run/named/session.key";
 };
 
 logging {
 	channel default_debug {
+		file "data/named.run";
 		severity dynamic;
 		print-time yes;
 	};
