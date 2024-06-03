@@ -370,17 +370,16 @@ options {
 	allow-query { any; };
 	recursion no;
 	check-names master ignore;
-	directory "/var/named";
-	dump-file "/var/named/data/cache_dump.db";
-	statistics-file "/var/named/data/named_stats.txt";
-	memstatistics-file "/var/named/data/named_mem_stats.txt";
+	directory "/var/cache/named";
+	dump-file "data/cache_dump.db";
+	statistics-file "data/named_stats.txt";
+	memstatistics-file "data/named_mem_stats.txt";
 	pid-file "/run/named/named.pid";
 	session-keyfile "/run/named/session.key";
 };
 
 logging {
 	channel default_debug {
-		file "data/named.run";
 		severity dynamic;
 		print-time yes;
 	};
@@ -394,7 +393,7 @@ view "caching" {
 
 	zone "." IN {
 		type hint;
-		file "named.ca";
+		file "/usr/share/dns/root.hints";
 	};
 };
 

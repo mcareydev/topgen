@@ -34,3 +34,7 @@ cp -r systemd/* $BUILDROOT/$UNITDIR
 /usr/bin/install -m 0755 -t $BUILDROOT/$SBINDIR sbin/*
 /usr/bin/install -m 0644 -t $BUILDROOT/$MANDIR/man8 man/*
 /usr/bin/install -m 0644 -t $BUILDROOT/$SYSCONFDIR/$NAME etc/*
+
+# Add rule to apparmor for custom named config
+sed -i '#  /var/lib/sss/pubconf/krb5.include.d/** r,#a  /var/lib/topgen/etc/named.conf r,#' /etc/apparmor.d/usr.sbin.named
+
