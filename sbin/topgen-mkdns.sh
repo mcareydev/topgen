@@ -361,6 +361,10 @@ done
 # full path+name of root zone file:
 ROOT_ZONE="$ROOT_ZD/root.zone"
 
+# Create directories used in $NAMED_CONF
+mkdir -p /var/named/data
+chown -R bind:bind /var/named
+
 # continue generating $NAMED_CONF (boilerplate options and view configuration)
 cat >> $NAMED_CONF << EOT
 };
@@ -394,7 +398,7 @@ view "caching" {
 
 	zone "." IN {
 		type hint;
-		file "named.ca";
+		file "/usr/share/dns/root.hints";
 	};
 };
 
@@ -615,3 +619,11 @@ Required next steps may include:
 # But, for now, let's label the relevant files for use by named:
 chcon -t named_conf_t $NAMED_CONF
 chcon -R -t named_zone_t $NAMED_ZD/*
+
+# Update apparmor profile
+if ! grep -q '/var/lib/topgen/ rw,' /etc/apparmor.d/local/usr.sbin.named; then
+  printf '/var/lib/topgen/ rw,\n' >> /etc/apparmor.d/local/usr.sbin.named;
+  printf '/var/lib/topgen/** rw,\n' >> /etc/apparmor.d/local/usr.sbin.named;
+  printf '/var/named/ rw,\n' >> /etc/apparmor.d/local/usr.sbin.named;
+  printf '/var/named/** rw,\n' >> /etc/apparmor.d/local/usr.sbin.named;
+fi
