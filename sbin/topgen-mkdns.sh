@@ -23,7 +23,8 @@
 # mistakes are simply TOO easy to make :)
 
 # input hosts file (<ip_addr fqdn> for all virtual Web hosts):
-SRC_WHOSTS='/var/lib/topgen/etc/hosts.nginx'
+[ -s /var/lib/topgen/etc/hosts.nginx ] &&
+  SRC_WHOSTS='/var/lib/topgen/etc/hosts.nginx'
 
 # additional input hosts files (<ip_addr fqdn>):
 SRC_XHOSTS=''
@@ -189,9 +190,9 @@ $USAGE_BLURB
 }
 
 # assert existence of $SRC_WHOSTS and $SRC_DELEG files, and $NAMED_ZD folder:
-[ -s "$SRC_WHOSTS" -a -s "$SRC_DELEG" -a -d "$NAMED_ZD" ] || {
+[ -s "$SRC_DELEG" -a -d "$NAMED_ZD" ] || {
   echo "
-ERROR: files \"$SRC_WHOSTS\", \"$SRC_DELEG\", and
+ERROR: file \"$SRC_DELEG\", and
        folder \"$NAMED_ZD\" MUST exist
        before running this command!
 
