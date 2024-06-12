@@ -12,9 +12,6 @@ TOPGEN_VARLIB='/var/lib/topgen'
 # if "yes", do not print out warnings:
 let VERBOSE=0
 
-# default recursive scrape depth:
-let DFL_DEPTH=1
-
 ###########################################################################
 ####    NO FURTHER USER-SERVICEABLE PARTS BEYOND THIS POINT !!!!!!!    ####
 ###########################################################################
@@ -24,18 +21,10 @@ Usage: $0 [-s <site_list>] [-t <target_directory>]
 
 The optional command line arguments are:
 
-    -s <site_list>        file containing space or newline separated sites
-                          to be scraped for static content; lines beginning
-                          with '#' are ignored;
-                          (default: $TOPGEN_ORIG).
-
     -t <target_directory> directory where all results (scraped content, list
                           of vhosts, certificates, configuration files, etc.
                           are stored;
                           (default: $TOPGEN_VARLIB).
-
-    -v                    increase verbosity level (may be used multiple times);
-                          (default: $VERBOSE).
 
 Recursively scrape, clean, curate a given list of Web sites. Additionally,
 issue certificates signed with a self-signed TopGen CA (which is in turn
@@ -48,14 +37,8 @@ scraped vhost.
 OPTIND=1
 while getopts "s:t:vh?" OPT; do
   case "$OPT" in
-  s)
-    TOPGEN_ORIG=$OPTARG
-    ;;
   t)
     TOPGEN_VARLIB=$OPTARG
-    ;;
-  v)
-    let VERBOSE++
     ;;
   *)
     echo "$USAGE_BLURB"
@@ -113,36 +96,6 @@ $USAGE_BLURB
 "
   exit 1
 }
-
-# default wget options:
-WGET_OPTS='-prEHN --convert-file-only --no-check-certificate -e robots=off --random-wait -t 2'
-# make wget quiet, unless verbosity >= 2:
-((VERBOSE>=2)) || WGET_OPTS="$WGET_OPTS -q"
-# make wget print debug output if verbosity >= 3
-((VERBOSE>=3)) && WGET_OPTS="$WGET_OPTS -d"
-
-# scrape sites listed in the $TOPGEN_ORIG file:
-grep -v '^#' "$TOPGEN_ORIG" | while read URL DEPTH; do
-  wget $WGET_OPTS -U "Mozilla/5.0 (X11)" -P $TOPGEN_VHOSTS \
-       -l ${DEPTH:-$DFL_DEPTH} $URL
-done
-
-# cleanup; remove IP-only vhosts, and vhosts ending with a ":<port-number>":
-shopt -s extglob
-rm -rf $TOPGEN_VHOSTS/+([[:digit:].]) $TOPGEN_VHOSTS/*:*
-
-# "curate" remaining vhosts; handle [www.]example.org/index.html issue:
-for VH in $TOPGEN_VHOSTS/*; do
-  VB=${VH##*/} # basename
-  NUM=$(ls $VH | wc -l)
-  # if example.org has only one file named "index.html", AND if
-  # www.example.org exists and DOESN'T contain "index.html", apply the fix:
-  if [ $NUM -eq 1 -a -f "$VH/index.html" -a -d "$TOPGEN_VHOSTS/www.$VB" \
-       -a ! -f "$TOPGEN_VHOSTS/www.$VB/index.html" ]; then
-    cp "$VH/index.html" "$TOPGEN_VHOSTS/www.$VB/"
-    ((VERBOSE)) && echo "curate: $VH/index.html -> $TOPGEN_VHOSTS/www.$VB/"
-  fi
-done
 
 # topgen.info is reserved, be sure to create it completely from scratch:
 rm -rf "$TOPGEN_SITE"
